@@ -2,7 +2,6 @@ package memory
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -21,22 +20,12 @@ func (d *Data) setValue(k, v string, opts []string) (string, error) {
 }
 
 func (d *Data) getValue(k string) (string, error) {
-	v, ok := d.values_map[k]
-	if !ok {
-		return "", fmt.Errorf("value not found for key %s", k)
-	}
-	return v.data, nil
+	v, err := Get(k, d)
+	return v.(string), err
 }
 
 func (d *Data) delValue(keys []string) (string, error) {
-	delCount := 0
-	for _, k := range keys {
-		if _, ok := d.values_map[k]; ok {
-			delCount++
-		}
-		delete(d.values_map, k)
-	}
-	return strconv.Itoa(delCount), nil
+	return Del(keys, d)
 }
 
 func NewData() *Data {
@@ -57,8 +46,7 @@ func parseCommand(command string, data *Data) (string, error) {
 	case "SET":
 		return data.setValue(key, parts[2], parts[3:])
 	case "DEL":
-		keys := parts[1:]
-		return data.delValue(keys)
+		return data.delValue(parts[1:])
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}
