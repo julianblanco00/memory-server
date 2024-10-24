@@ -19,9 +19,8 @@ func (d *Data) setValue(k, v string, opts []string) (string, error) {
 	return Set(d, k, v, opts)
 }
 
-func (d *Data) getValue(k string) (string, error) {
-	v, err := Get(k, d)
-	return v.(string), err
+func (d *Data) getValue(k string) (interface{}, error) {
+	return Get(k, d)
 }
 
 func (d *Data) delValue(keys []string) (string, error) {
@@ -35,7 +34,7 @@ func NewData() *Data {
 	}
 }
 
-func parseCommand(command string, data *Data) (string, error) {
+func parseCommand(command string, data *Data) (interface{}, error) {
 	parts := strings.Split(command, " ")
 	cmd := parts[0]
 	key := parts[1]
