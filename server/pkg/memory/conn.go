@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 )
+
+const CONN_ID_LENGTH = 36
 
 func handleReadFromConn(conn net.Conn, data *Data) {
 	for {
-		// conn.Write([]byte("Enter command: "))
 		buf := make([]byte, 1024)
-		_, err := conn.Read(buf)
+		n, err := conn.Read(buf)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				fmt.Println("connection closed")
@@ -20,17 +22,10 @@ func handleReadFromConn(conn net.Conn, data *Data) {
 			}
 		}
 
-		connId := buf[:36]
-		cmd := []byte{}
+		connId := buf[:CONN_ID_LENGTH]
+		cmd := buf[CONN_ID_LENGTH:n]
 
-		for _, v := range buf[37:] {
-			if v == 0 {
-				break
-			}
-			cmd = append(cmd, v)
-		}
-
-		result, error := parseCommand(string(cmd), data)
+		result, error := parseCommand(strings.TrimSpace(string(cmd)), data)
 		if error != nil {
 			conn.Write([]byte(error.Error()))
 			continue
