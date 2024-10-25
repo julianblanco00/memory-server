@@ -15,6 +15,10 @@ type Data struct {
 	amount     int32
 }
 
+func (d *Data) multiSet(vals []string) (string, error) {
+	return MultiSet(d, vals)
+}
+
 func (d *Data) setValue(k, v string, opts []string) (string, error) {
 	return Set(d, k, v, opts)
 }
@@ -34,10 +38,28 @@ func NewData() *Data {
 	}
 }
 
+func cleanKeys(keys []string) []string {
+	var parsedKeys []string
+	for _, k := range keys {
+		parsedKeys = append(parsedKeys, strings.TrimSpace(k))
+	}
+	fmt.Println(parsedKeys)
+	return parsedKeys
+}
+
+func split(c rune) bool {
+	return c == ' '
+}
+
 func parseCommand(command string, data *Data) (interface{}, error) {
-	parts := strings.Split(command, " ")
+	parts := strings.FieldsFunc(command, split)
+
+	if len(parts) == 1 {
+		return "", fmt.Errorf("missing arguments")
+	}
+
 	cmd := parts[0]
-	key := parts[1]
+	key := cleanKeys([]string{parts[1]})[0]
 
 	switch strings.TrimSpace(cmd) {
 	case "GET":
@@ -45,7 +67,9 @@ func parseCommand(command string, data *Data) (interface{}, error) {
 	case "SET":
 		return data.setValue(key, parts[2], parts[3:])
 	case "DEL":
-		return data.delValue(parts[1:])
+		return data.delValue(cleanKeys(parts[1:]))
+	case "MSET":
+		return data.multiSet(parts)
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}

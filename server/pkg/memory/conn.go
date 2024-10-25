@@ -27,7 +27,7 @@ func handleReadFromConn(conn net.Conn, data *Data) {
 
 		result, error := parseCommand(strings.TrimSpace(string(cmd)), data)
 		if error != nil {
-			conn.Write([]byte(error.Error()))
+			fmt.Fprint(conn, string(connId), error.Error())
 			continue
 		}
 

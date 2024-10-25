@@ -37,4 +37,9 @@ describe("memory-server tests", () => {
     const resp = await memoryServer.del(["mykey", "mykey1"]);
     assert.equal(resp, "0", "error deleting key");
   });
+
+  it("should fail trying to get a key without passing a key", async () => {
+    const resp = await memoryServer.get("    ");
+    assert.equal(resp, "missing arguments", "error getting key");
+  });
 });
