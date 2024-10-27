@@ -105,7 +105,7 @@ class MemoryServer {
     }
 
     return this.handleRequest(
-      `$3\nSET\n$${key.length}\n${key}\n$${value.length}\n${value.replaceAll("\n", "\\n")}\n${strOpts}`,
+      `$3\nSET\n$${key.length}\n${key}\n$${value.length}\n${value}\n${strOpts}`,
     );
   }
 

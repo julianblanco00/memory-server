@@ -46,7 +46,7 @@ func parseRESPString(input string) ([]string, error) {
 	i := 0
 	for i < len(input) {
 		if input[i] != '$' {
-			return nil, errors.New("command should start with a $")
+			return nil, errors.New("length definition should start with a $")
 		}
 		i++
 		lengthStart := i

@@ -14,7 +14,7 @@ afterEach(async () => {
 
 describe("memory-server tests", () => {
   it("can set a value in a key", async () => {
-    const resp = await memoryServer.set("mykey", "myvalue is the best", [
+    const resp = await memoryServer.set("mykey", "myvalue is the\n best", [
       ["get"],
       ["exat", "120"],
     ]);
@@ -23,7 +23,7 @@ describe("memory-server tests", () => {
 
   it("can get a key with value", async () => {
     const resp = await memoryServer.get("mykey");
-    assert.equal(resp, "myvalue is the best", "error getting key");
+    assert.equal(resp, "myvalue is the\n best", "error getting key");
   });
 
   it("can delete a key", async () => {
