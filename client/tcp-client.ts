@@ -91,34 +91,36 @@ class MemoryServer {
     return response;
   }
 
-  async set(key: string, value: string, opts?: Record<string, string>) {
+  async set(key: string, value: string, opts?: string[][]) {
     let strOpts = "";
 
     if (opts) {
-      Object.entries(opts).forEach(([k, v]) => {
+      opts.forEach(([k, v]) => {
         if (v) {
-          strOpts += ` ${k} ${v}`;
+          strOpts += `$${k.length}\n${k}\n$${v.length}\n${v}\n`;
         } else {
-          strOpts += ` ${k}`;
+          strOpts += `$${k.length}\n${k}\n`;
         }
       });
     }
 
-    return this.handleRequest(`SET ${key} ${value} ${strOpts}`);
+    return this.handleRequest(
+      `$3\nSET\n$${key.length}\n${key}\n$${value.length}\n${value.replaceAll("\n", "\\n")}\n${strOpts}`,
+    );
   }
 
   async get(key: string) {
-    const val = await this.handleRequest(`GET ${key}`);
+    const val = await this.handleRequest(`$3\nGET\n$${key.length}\n${key}\n`);
     if (val === "<nil>") return "nil";
     return val;
   }
 
   async del(key: string | string[]) {
-    let keys = key;
+    let keys = `$${key.length}\n${key}`;
     if (Array.isArray(key)) {
-      keys = key.map((k) => k.trim()).join(" ");
+      keys = key.map((k) => `\n$${k.length}\n${k}`).join(" ");
     }
-    return this.handleRequest(`DEL ${keys}`);
+    return this.handleRequest(`$3\nDEL ${keys}`);
   }
 }
 

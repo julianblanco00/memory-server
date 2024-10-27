@@ -1,7 +1,9 @@
 package memory
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -38,38 +40,62 @@ func NewData() *Data {
 	}
 }
 
-func cleanKeys(keys []string) []string {
-	var parsedKeys []string
-	for _, k := range keys {
-		parsedKeys = append(parsedKeys, strings.TrimSpace(k))
-	}
-	fmt.Println(parsedKeys)
-	return parsedKeys
-}
+func parseRESPString(input string) ([]string, error) {
+	var result []string
 
-func split(c rune) bool {
-	return c == ' '
+	i := 0
+	for i < len(input) {
+		if input[i] != '$' {
+			return nil, errors.New("command should start with a $")
+		}
+		i++
+		lengthStart := i
+		for i < len(input) && input[i] != ' ' && input[i] != '\n' {
+			i++
+		}
+		lengthStr := input[lengthStart:i]
+
+		length, err := strconv.Atoi(lengthStr)
+		if err != nil {
+			return nil, fmt.Errorf("error getting length: %v", err)
+		}
+
+		i++
+
+		if i+length > len(input) {
+			return nil, errors.New("provided length exceeds input length")
+		}
+
+		item := input[i : i+length]
+		result = append(result, item)
+		i += length
+
+		for i < len(input) && (input[i] == ' ' || input[i] == '\n') {
+			i++
+		}
+	}
+
+	return result, nil
 }
 
 func parseCommand(command string, data *Data) (interface{}, error) {
-	parts := strings.FieldsFunc(command, split)
-
-	if len(parts) == 1 {
-		return "", fmt.Errorf("missing arguments")
+	parsed, err := parseRESPString(command)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
 
-	cmd := parts[0]
-	key := cleanKeys([]string{parts[1]})[0]
+	cmd := parsed[0]
 
 	switch strings.TrimSpace(cmd) {
 	case "GET":
-		return data.getValue(key)
+		return data.getValue(parsed[1])
 	case "SET":
-		return data.setValue(key, parts[2], parts[3:])
+		return data.setValue(parsed[1], parsed[2], parsed[3:])
 	case "DEL":
-		return data.delValue(cleanKeys(parts[1:]))
-	case "MSET":
-		return data.multiSet(parts)
+		return data.delValue(parsed[1:])
+	// case "MSET":
+	// 	return data.multiSet(parts)
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}
