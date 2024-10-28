@@ -13,14 +13,26 @@ afterEach(async () => {
 });
 
 describe("memory-server tests", () => {
+  it("should fail trying to set multiple invalid values", async () => {
+    await assert.rejects(
+      memoryServer.mset("a", "1", "b"),
+      "succeded setting invalid multiple values",
+    );
+  });
+
+  it("can set multiple values", async () => {
+    await assert.doesNotReject(
+      memoryServer.mset("a", "1", "b", "2"),
+      "error setting multiple values",
+    );
+  });
   it("can set a value in a key", async () => {
     const resp = await memoryServer.set("mykey", "myvalue is the\n best", [
       ["get"],
-      ["exat", "120"],
+      ["EXAT", "120"],
     ]);
     assert.equal(resp, "OK", "error setting key");
   });
-
   it("can get a key with value", async () => {
     const resp = await memoryServer.get("mykey");
     assert.equal(resp, "myvalue is the\n best", "error getting key");
@@ -41,8 +53,15 @@ describe("memory-server tests", () => {
     assert.equal(resp, "0", "error deleting key");
   });
 
-  it("should fail trying to get a key without passing a key", async () => {
+  it("should return nil trying to get a key without passing a key", async () => {
     const resp = await memoryServer.get("    v");
     assert.equal(resp, "nil", "error getting key");
+  });
+
+  it("can set hash map values", async () => {
+    await assert.doesNotReject(
+      memoryServer.hset("mykey", { foo: "bar", foo2: "bar2" }),
+      "error setting hash map data",
+    );
   });
 });
