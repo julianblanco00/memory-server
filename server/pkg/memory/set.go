@@ -26,10 +26,10 @@ func isExpOpt(opt Opt) bool {
 	return opt == "EX" || opt == "PX" || opt == "EXAT" || opt == "PXAT"
 }
 
-func getOldValue(options Options, data *Data, k string) (interface{}, error) {
+func getOldValue(options Options, data *StringData, k string) (interface{}, error) {
 	var oldValue interface{}
 	if _, ok := options[get]; ok {
-		if v, ok := data.values_map[k]; ok {
+		if v, ok := data.values[k]; ok {
 			if reflect.TypeOf(v).Kind() != reflect.String {
 				return "", fmt.Errorf("value stored at %s is not a string", k)
 			}
@@ -39,8 +39,9 @@ func getOldValue(options Options, data *Data, k string) (interface{}, error) {
 	return oldValue, nil
 }
 
-func getExpAt(options Options, data *Data, k string) (*int64, error) {
+func getExpAt(options Options, data *StringData, k string) (*int64, error) {
 	count := 0
+	var expAt *int64
 
 	for o, v := range options {
 		if isExpOpt(o) || o == "KEEPTTL" {
@@ -49,33 +50,33 @@ func getExpAt(options Options, data *Data, k string) (*int64, error) {
 				return nil, fmt.Errorf("more than 1 expiry option specified")
 			}
 			if o == "KEEPTTL" {
-				if old, ok := data.values_map[k]; ok {
-					return old.expIn, nil
+				if old, ok := data.values[k]; ok {
+					expAt = old.expIn
 				}
 			}
 			if o == "EX" {
 				d := time.Duration(*v) * time.Millisecond // seconds to millis
 				n := int64(d)
-				return &n, nil
+				expAt = &n
 			}
 			if o == "PX" {
-				return v, nil
+				expAt = v
 			}
 			if o == "EXAT" {
 				diff := time.Until(time.Unix(*v, 0)).Milliseconds()
-				return &diff, nil
+				expAt = &diff
 			}
 			if o == "PXAT" {
 				diff := time.Until(time.Unix(*v/1000, 0)).Milliseconds()
-				return &diff, nil
+				expAt = &diff
 			}
 		}
 	}
 
-	return nil, nil
+	return expAt, nil
 }
 
-func checkValidWriteOption(options Options, data *Data, k string) error {
+func checkValidWriteOption(options Options, data *StringData, k string) error {
 	_, hasNx := options[nx]
 	_, hasXx := options[xx]
 
@@ -84,13 +85,13 @@ func checkValidWriteOption(options Options, data *Data, k string) error {
 	}
 
 	if hasNx {
-		if _, ok := data.values_map[k]; ok {
+		if _, ok := data.values[k]; ok {
 			return fmt.Errorf("option NX was specified but key already has a value")
 		}
 	}
 
 	if hasXx {
-		if _, ok := data.values_map[k]; !ok {
+		if _, ok := data.values[k]; !ok {
 			return fmt.Errorf("option XX was specified but key does not exist yet")
 		}
 	}
@@ -98,7 +99,7 @@ func checkValidWriteOption(options Options, data *Data, k string) error {
 	return nil
 }
 
-func Set(data *Data, k, v string, opts []string) (string, error) {
+func Set(data *StringData, k, v string, opts []string) (string, error) {
 	options := make(Options)
 
 	for i := 0; i < len(opts); i++ {
@@ -131,11 +132,11 @@ func Set(data *Data, k, v string, opts []string) (string, error) {
 		return "", err
 	}
 
-	value := Value{
+	value := StringValue{
 		data:  v,
 		expIn: expIn,
 	}
-	data.values_map[k] = value
+	data.values[k] = value
 
 	if oldValue != nil {
 		return oldValue.(string), nil

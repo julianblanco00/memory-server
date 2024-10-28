@@ -5,8 +5,8 @@ import (
 	"reflect"
 )
 
-func Get(k string, d *Data) (interface{}, error) {
-	v, ok := d.values_map[k]
+func Get(k string, d *StringData) (interface{}, error) {
+	v, ok := d.values[k]
 	if !ok {
 		return nil, nil
 	}

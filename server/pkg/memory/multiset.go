@@ -1,8 +1,19 @@
 package memory
 
-import "fmt"
+func MSet(d *StringData, vals []string) (string, error) {
+	i := 0
 
-func MultiSet(d *Data, vals []string) (string, error) {
-	fmt.Println(vals)
-	return "", nil
+	for i < len(vals) {
+		k := vals[i]
+		i++
+		v := vals[i]
+
+		d.values[k] = StringValue{
+			data: v,
+		}
+
+		i++
+	}
+
+	return "OK", nil
 }

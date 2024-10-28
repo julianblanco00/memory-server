@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-const CONN_ID_LENGTH = 36
+const CONN_ID_LENGTH = 16
 
-func handleReadFromConn(conn net.Conn, data *Data) {
+func handleReadFromConn(conn net.Conn, sData *StringData, hData *HashData) {
 	for {
 		buf := make([]byte, 1024)
 		n, err := conn.Read(buf)
@@ -25,9 +25,9 @@ func handleReadFromConn(conn net.Conn, data *Data) {
 		connId := buf[:CONN_ID_LENGTH]
 		cmd := buf[CONN_ID_LENGTH:n]
 
-		result, error := parseCommand(strings.TrimSpace(string(cmd)), data)
+		result, error := parseCommand(strings.TrimSpace(string(cmd)), sData, hData)
 		if error != nil {
-			fmt.Fprint(conn, string(connId), error.Error())
+			fmt.Fprint(conn, string(connId), error)
 			continue
 		}
 
@@ -36,7 +36,8 @@ func handleReadFromConn(conn net.Conn, data *Data) {
 }
 
 func HandleConnection(listener net.Listener) {
-	data := NewData()
+	sData := NewStringData()
+	hData := NewHashData()
 
 	for {
 		conn, err := listener.Accept()
@@ -47,6 +48,6 @@ func HandleConnection(listener net.Listener) {
 
 		fmt.Printf("new tcp connection %s \n", conn.RemoteAddr())
 
-		go handleReadFromConn(conn, data)
+		go handleReadFromConn(conn, sData, hData)
 	}
 }

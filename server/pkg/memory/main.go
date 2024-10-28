@@ -7,36 +7,55 @@ import (
 	"strings"
 )
 
-type Value struct {
+type StringValue struct {
 	expIn *int64
 	data  string
 }
-
-type Data struct {
-	values_map map[string]Value
-	amount     int32
+type StringData struct {
+	values map[string]StringValue
+	amount int32
 }
 
-func (d *Data) multiSet(vals []string) (string, error) {
-	return MultiSet(d, vals)
+type HashValue struct {
+	expIn *int64
+	data  map[string]string
+}
+type HashData struct {
+	values map[string]HashValue
+	amount int32
 }
 
-func (d *Data) setValue(k, v string, opts []string) (string, error) {
+func (h *HashData) hset(k string, vals []string) (string, error) {
+	return HSet(h, k, vals)
+}
+
+func (d *StringData) mset(vals []string) (string, error) {
+	return MSet(d, vals)
+}
+
+func (d *StringData) set(k, v string, opts []string) (string, error) {
 	return Set(d, k, v, opts)
 }
 
-func (d *Data) getValue(k string) (interface{}, error) {
+func (d *StringData) get(k string) (interface{}, error) {
 	return Get(k, d)
 }
 
-func (d *Data) delValue(keys []string) (string, error) {
+func (d *StringData) del(keys []string) (string, error) {
 	return Del(keys, d)
 }
 
-func NewData() *Data {
-	return &Data{
-		amount:     0,
-		values_map: make(map[string]Value),
+func NewStringData() *StringData {
+	return &StringData{
+		amount: 0,
+		values: make(map[string]StringValue),
+	}
+}
+
+func NewHashData() *HashData {
+	return &HashData{
+		amount: 0,
+		values: make(map[string]HashValue),
 	}
 }
 
@@ -49,13 +68,13 @@ func parseRESPString(input string) ([]string, error) {
 			return nil, errors.New("length definition should start with a $")
 		}
 		i++
-		lengthStart := i
+		lenStart := i
 		for i < len(input) && input[i] != ' ' && input[i] != '\n' {
 			i++
 		}
-		lengthStr := input[lengthStart:i]
+		lenStr := input[lenStart:i] // -> i is the end of the length line
 
-		length, err := strconv.Atoi(lengthStr)
+		length, err := strconv.Atoi(lenStr)
 		if err != nil {
 			return nil, fmt.Errorf("error getting length: %v", err)
 		}
@@ -78,24 +97,26 @@ func parseRESPString(input string) ([]string, error) {
 	return result, nil
 }
 
-func parseCommand(command string, data *Data) (interface{}, error) {
+func parseCommand(command string, sData *StringData, hData *HashData) (interface{}, error) {
 	parsed, err := parseRESPString(command)
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return nil, errors.New("wrong number of arguments")
 	}
 
 	cmd := parsed[0]
 
 	switch strings.TrimSpace(cmd) {
 	case "GET":
-		return data.getValue(parsed[1])
+		return sData.get(parsed[1])
 	case "SET":
-		return data.setValue(parsed[1], parsed[2], parsed[3:])
+		return sData.set(parsed[1], parsed[2], parsed[3:])
 	case "DEL":
-		return data.delValue(parsed[1:])
-	// case "MSET":
-	// 	return data.multiSet(parts)
+		return sData.del(parsed[1:])
+	case "MSET":
+		return sData.mset(parsed[1:])
+	case "HSET":
+		return hData.hset(parsed[1], parsed[2:])
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}
