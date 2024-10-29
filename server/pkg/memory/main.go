@@ -29,6 +29,10 @@ func (h *HashData) hset(k string, vals []string) (string, error) {
 	return HSet(h, k, vals)
 }
 
+func (h *HashData) hget(k, f string) (interface{}, error) {
+	return hGet(h, k, f)
+}
+
 func (d *StringData) mset(vals []string) (string, error) {
 	return MSet(d, vals)
 }
@@ -98,25 +102,25 @@ func parseRESPString(input string) ([]string, error) {
 }
 
 func parseCommand(command string, sData *StringData, hData *HashData) (interface{}, error) {
-	parsed, err := parseRESPString(command)
+	cmd, err := parseRESPString(command)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("wrong number of arguments")
 	}
 
-	cmd := parsed[0]
-
-	switch strings.TrimSpace(cmd) {
+	switch strings.TrimSpace(cmd[0]) {
 	case "GET":
-		return sData.get(parsed[1])
+		return sData.get(cmd[1])
 	case "SET":
-		return sData.set(parsed[1], parsed[2], parsed[3:])
+		return sData.set(cmd[1], cmd[2], cmd[3:])
 	case "DEL":
-		return sData.del(parsed[1:])
+		return sData.del(cmd[1:])
 	case "MSET":
-		return sData.mset(parsed[1:])
+		return sData.mset(cmd[1:])
 	case "HSET":
-		return hData.hset(parsed[1], parsed[2:])
+		return hData.hset(cmd[1], cmd[2:])
+	case "HGET":
+		return hData.hget(cmd[1], cmd[2])
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}

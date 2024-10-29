@@ -71,6 +71,16 @@ class MemoryServer {
     });
   }
 
+  private buildRESPCommand(...vals: string[]): string {
+    let str = "";
+
+    vals.forEach((val) => {
+      str += `$${val.length}\n${val}\n`;
+    });
+
+    return str;
+  }
+
   private generateRequestId() {
     return Buffer.from(crypto.randomUUID().replace(/-/g, ""), "hex");
   }
@@ -98,84 +108,53 @@ class MemoryServer {
   }
 
   async set(key: string, value: string, opts?: string[][]) {
-    let strOpts = "";
-
-    if (opts) {
-      opts.forEach(([k, v]) => {
-        if (v) {
-          strOpts += `$${k.length}\n${k}\n$${v.length}\n${v}\n`;
-        } else {
-          strOpts += `$${k.length}\n${k}\n`;
-        }
-      });
-    }
-
     return this.handleRequest(
-      `$3\nSET\n$${key.length}\n${key}\n$${value.length}\n${value}\n${strOpts}`,
+      this.buildRESPCommand("SET", key, value, ...(opts?.flat() || [])),
     );
   }
 
-  async mset(...params: string[]) {
-    let str = "$4\nMSET\n";
-
+  async mSet(...params: string[]) {
     if (params.length % 2 === 1) {
       throw new Error("wrong number of arguments");
     }
-
-    let i = 0;
-
-    while (i < params.length) {
-      const k = params[i];
-      i++;
-      const v = params[i];
-      i++;
-      str += `$${k.length}\n${k}\n$${v?.length ?? 0}\n${v}\n`;
-    }
-
-    return this.handleRequest(str);
+    return this.handleRequest(this.buildRESPCommand("MSET", ...params));
   }
 
-  async hset(key: string, ...params: string[] | Record<string, string>[]) {
-    let str = `$4\nHSET\n$${key.length}\n${key}\n`;
+  async hSet(key: string, ...params: string[] | Record<string, string>[]) {
+    let cmdParams: string[] = [key];
 
     if (typeof params[0] === "object") {
       Object.entries(params[0]).forEach(([k, v]) => {
-        str += `$${k.length}\n${k}\n`;
-        str += `$${v.length}\n${v}\n`;
+        cmdParams.push(k, v);
       });
     } else if (typeof params[0] === "string") {
       if (params.length % 2 === 1) {
         throw new Error("wrong number of arguments");
       }
-
-      let i = 0;
-
-      while (i < params.length) {
-        const k = params[i];
-        i++;
-        const v = params[i];
-        i++;
-        str += `$${k.length}\n${k}\n$${v?.length ?? 0}\n${v}\n`;
-      }
+      cmdParams.push(...(params as unknown as string));
     } else {
       throw new Error("invalid input");
     }
 
-    return this.handleRequest(str);
+    return this.handleRequest(this.buildRESPCommand("HSET", ...cmdParams));
+  }
+
+  async hGet(key: string, field: string) {
+    if (!key || !field) {
+      throw new Error("missing fields for command hGet");
+    }
+
+    return this.handleRequest(this.buildRESPCommand("HGET", key, field));
   }
 
   async get(key: string) {
-    const val = await this.handleRequest(`$3\nGET\n$${key.length}\n${key}\n`);
-    if (val === "<nil>") return "nil";
-    return val;
+    const val = await this.handleRequest(this.buildRESPCommand("GET", key));
+    return val === "<nil>" ? "nil" : val;
   }
 
   async del(key: string | string[]) {
-    let keys = `$${key.length}\n${key}`;
-    if (Array.isArray(key)) {
-      keys = key.map((k) => `\n$${k.length}\n${k}`).join(" ");
-    }
-    return this.handleRequest(`$3\nDEL ${keys}`);
+    const k = typeof key === "string" ? [key] : key;
+    return this.handleRequest(this.buildRESPCommand("DEL", ...k));
   }
 }
 
