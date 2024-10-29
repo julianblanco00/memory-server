@@ -155,6 +155,13 @@ class MemoryServer {
     }
     return this.handleRequest(this.buildRESPCommand("HGET", key, field));
   }
+
+  async hDel(key: string, ...fields: string[]) {
+    if (!key || !fields.length) {
+      throw new Error("missing fields for command hDel");
+    }
+    return this.handleRequest(this.buildRESPCommand("HDEL", key, ...fields));
+  }
 }
 
 export default MemoryServer;

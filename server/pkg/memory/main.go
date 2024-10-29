@@ -26,11 +26,15 @@ type HashData struct {
 }
 
 func (h *HashData) hset(k string, vals []string) (string, error) {
-	return HSet(h, k, vals)
+	return hSet(h, k, vals)
 }
 
 func (h *HashData) hget(k, f string) (interface{}, error) {
 	return hGet(h, k, f)
+}
+
+func (h *HashData) hdel(k string, fs []string) (string, error) {
+	return hDel(h, k, fs)
 }
 
 func (d *StringData) mset(vals []string) (string, error) {
@@ -121,6 +125,8 @@ func parseCommand(command string, sData *StringData, hData *HashData) (interface
 		return hData.hset(cmd[1], cmd[2:])
 	case "HGET":
 		return hData.hget(cmd[1], cmd[2])
+	case "HDEL":
+		return hData.hdel(cmd[1], cmd[2:])
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}

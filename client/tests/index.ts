@@ -78,4 +78,9 @@ describe("memory-server tests", () => {
     const resp = await memoryServer.hGet("mykey", "foo");
     assert.equal(resp, "bar");
   });
+
+  it("can delete field in hash map", async () => {
+    const resp = await memoryServer.hDel("mykey", "foo", "foo2", "foo3");
+    assert.equal(resp, "2");
+  });
 });

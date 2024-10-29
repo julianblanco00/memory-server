@@ -1,11 +1,17 @@
 package memory
 
-func HSet(d *HashData, k string, v []string) (string, error) {
+import "strconv"
+
+func hSet(d *HashData, k string, v []string) (string, error) {
 	m := make(map[string]string)
 
+	c := 0
 	i := 0
 	for i < len(v) {
-		m[v[i]] = v[i+1]
+		if _, ok := m[v[i]]; !ok {
+			m[v[i]] = v[i+1]
+			c++
+		}
 		i += 2
 	}
 
@@ -13,5 +19,5 @@ func HSet(d *HashData, k string, v []string) (string, error) {
 		data: m,
 	}
 
-	return "", nil
+	return strconv.Itoa(c), nil
 }
