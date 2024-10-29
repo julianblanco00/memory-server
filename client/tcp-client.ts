@@ -113,6 +113,16 @@ class MemoryServer {
     );
   }
 
+  async get(key: string) {
+    const val = await this.handleRequest(this.buildRESPCommand("GET", key));
+    return val === "<nil>" ? "nil" : val;
+  }
+
+  async del(key: string | string[]) {
+    const k = typeof key === "string" ? [key] : key;
+    return this.handleRequest(this.buildRESPCommand("DEL", ...k));
+  }
+
   async mSet(...params: string[]) {
     if (params.length % 2 === 1) {
       throw new Error("wrong number of arguments");
@@ -143,18 +153,7 @@ class MemoryServer {
     if (!key || !field) {
       throw new Error("missing fields for command hGet");
     }
-
     return this.handleRequest(this.buildRESPCommand("HGET", key, field));
-  }
-
-  async get(key: string) {
-    const val = await this.handleRequest(this.buildRESPCommand("GET", key));
-    return val === "<nil>" ? "nil" : val;
-  }
-
-  async del(key: string | string[]) {
-    const k = typeof key === "string" ? [key] : key;
-    return this.handleRequest(this.buildRESPCommand("DEL", ...k));
   }
 }
 
