@@ -7,66 +7,6 @@ import (
 	"strings"
 )
 
-type StringValue struct {
-	expIn *int64
-	data  string
-}
-type StringData struct {
-	values map[string]StringValue
-	amount int32
-}
-
-type HashValue struct {
-	expIn *int64
-	data  map[string]string
-}
-type HashData struct {
-	values map[string]HashValue
-	amount int32
-}
-
-func (h *HashData) hset(k string, vals []string) (string, error) {
-	return hSet(h, k, vals)
-}
-
-func (h *HashData) hget(k, f string) (interface{}, error) {
-	return hGet(h, k, f)
-}
-
-func (h *HashData) hdel(k string, fs []string) (string, error) {
-	return hDel(h, k, fs)
-}
-
-func (d *StringData) mset(vals []string) (string, error) {
-	return MSet(d, vals)
-}
-
-func (d *StringData) set(k, v string, opts []string) (string, error) {
-	return Set(d, k, v, opts)
-}
-
-func (d *StringData) get(k string) (interface{}, error) {
-	return Get(k, d)
-}
-
-func (d *StringData) del(keys []string) (string, error) {
-	return Del(keys, d)
-}
-
-func NewStringData() *StringData {
-	return &StringData{
-		amount: 0,
-		values: make(map[string]StringValue),
-	}
-}
-
-func NewHashData() *HashData {
-	return &HashData{
-		amount: 0,
-		values: make(map[string]HashValue),
-	}
-}
-
 func parseRESPString(input string) ([]string, error) {
 	var result []string
 
@@ -127,6 +67,8 @@ func parseCommand(command string, sData *StringData, hData *HashData) (interface
 		return hData.hget(cmd[1], cmd[2])
 	case "HDEL":
 		return hData.hdel(cmd[1], cmd[2:])
+	case "HGETALL":
+		return hData.hgetall(cmd[1])
 	default:
 		return "", fmt.Errorf("invalid command %s \n", cmd)
 	}

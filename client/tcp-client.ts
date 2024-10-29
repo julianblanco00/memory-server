@@ -162,6 +162,13 @@ class MemoryServer {
     }
     return this.handleRequest(this.buildRESPCommand("HDEL", key, ...fields));
   }
+
+  async hGetAll(key: string) {
+    if (!key) {
+      throw new Error("missing fields for command hGetAll");
+    }
+    return this.handleRequest(this.buildRESPCommand("HGETALL", key));
+  }
 }
 
 export default MemoryServer;

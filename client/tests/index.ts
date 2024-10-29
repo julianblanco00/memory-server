@@ -79,6 +79,11 @@ describe("memory-server tests", () => {
     assert.equal(resp, "bar");
   });
 
+  it("can get all hash map values", async () => {
+    const resp = await memoryServer.hGetAll("mykey");
+    assert.equal(resp, JSON.stringify({ foo: "bar", foo2: "bar2" }));
+  });
+
   it("can delete field in hash map", async () => {
     const resp = await memoryServer.hDel("mykey", "foo", "foo2", "foo3");
     assert.equal(resp, "2");
