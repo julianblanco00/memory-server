@@ -45,7 +45,7 @@ func parseRESPString(input string) ([]string, error) {
 	return result, nil
 }
 
-func parseCommand(command string, sData *StringData, hData *HashData) (interface{}, error) {
+func parseCommand(command string) (interface{}, error) {
 	cmd, err := parseRESPString(command)
 	if err != nil {
 		fmt.Println(err)

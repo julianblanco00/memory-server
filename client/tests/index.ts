@@ -8,9 +8,9 @@ beforeEach(async () => {
   await memoryServer.connect();
 });
 
-afterEach(async () => {
-  await memoryServer.disconnect();
-});
+// afterEach(async () => {
+//   await memoryServer.disconnect();
+// });
 
 describe("memory-server tests", () => {
   it("should fail trying to set multiple invalid values", async () => {

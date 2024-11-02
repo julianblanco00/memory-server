@@ -91,6 +91,7 @@ class MemoryServer {
     }
 
     const requestId = this.generateRequestId();
+    console.log(requestId.length, requestId.toString("hex").length);
     const buff = Buffer.concat([requestId, Buffer.from(" "), Buffer.from(cmd)]);
 
     this.client.write(buff);
