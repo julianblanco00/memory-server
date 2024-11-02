@@ -60,7 +60,7 @@ func (ms *MemoryServer) listenConnectionEvents() (string, error) {
 	}
 }
 
-func (ms *MemoryServer) connect() error {
+func (ms *MemoryServer) Connect() error {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", ms.host, ms.port))
 	if err != nil {
 		return err
@@ -99,20 +99,20 @@ func (ms *MemoryServer) handleRequest(cmd string) ([]byte, error) {
 	return r, nil
 }
 
-func (ms *MemoryServer) get(cmd string) ([]byte, error) {
+func (ms *MemoryServer) Get(cmd string) ([]byte, error) {
 	return ms.handleRequest(buildRESPCommand("GET", cmd))
 }
 
 func main() {
 	ms := NewMemoryServer("localhost", "4444")
-	err := ms.connect()
+	err := ms.Connect()
 	if err != nil {
 		os.Exit(1)
 	}
 
 	fmt.Println("connected to memory server!")
 
-	mykey, err := ms.get("mykey")
+	mykey, err := ms.Get("mykey")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
