@@ -39,7 +39,12 @@ func handleReadFromConn(conn net.Conn) {
 			continue
 		}
 
-		fmt.Fprint(conn, string(connId), result)
+		if result == nil {
+			conn.Write(connId)
+		} else {
+			bytes := append(connId, []byte(result.(string))...)
+			conn.Write(bytes)
+		}
 	}
 }
 
