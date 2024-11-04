@@ -1,10 +1,9 @@
-package main
+package memoryserver
 
 import (
 	"encoding/hex"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -103,20 +102,20 @@ func (ms *MemoryServer) Get(cmd string) ([]byte, error) {
 	return ms.handleRequest(buildRESPCommand("GET", cmd))
 }
 
-func main() {
-	ms := NewMemoryServer("localhost", "4444")
-	err := ms.Connect()
-	if err != nil {
-		os.Exit(1)
-	}
-
-	fmt.Println("connected to memory server!")
-
-	mykey, err := ms.Get("mykey")
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	fmt.Println(mykey, string(mykey))
-}
+// func main() {
+// 	ms := NewMemoryServer("localhost", "4444")
+// 	err := ms.Connect()
+// 	if err != nil {
+// 		os.Exit(1)
+// 	}
+//
+// 	fmt.Println("connected to memory server!")
+//
+// 	mykey, err := ms.Get("mykey")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		os.Exit(1)
+// 	}
+//
+// 	fmt.Println(mykey, string(mykey))
+// }
