@@ -10,11 +10,11 @@ type StringData struct {
 }
 
 func (d *StringData) exists(keys []string) (int, error) {
-	return Exists(d, keys)
+	return sExists(d, keys)
 }
 
-func (d *StringData) append(keys []string) (int, error) {
-	return Append(d, keys)
+func (d *StringData) append(key, value string) (int, error) {
+	return Append(d, key, value)
 }
 
 func (d *StringData) mset(vals []string) (string, error) {
