@@ -9,6 +9,10 @@ type HashData struct {
 	amount int32
 }
 
+func (d *HashData) exists(keys []string) (int, error) {
+	return HExists(d, keys)
+}
+
 func (h *HashData) hset(k string, vals []string) (string, error) {
 	return hSet(h, k, vals)
 }

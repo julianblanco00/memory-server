@@ -9,6 +9,14 @@ type StringData struct {
 	amount int32
 }
 
+func (d *StringData) exists(keys []string) (int, error) {
+	return Exists(d, keys)
+}
+
+func (d *StringData) append(keys []string) (int, error) {
+	return Append(d, keys)
+}
+
 func (d *StringData) mset(vals []string) (string, error) {
 	return MSet(d, vals)
 }

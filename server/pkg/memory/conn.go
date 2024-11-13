@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -42,7 +43,18 @@ func handleReadFromConn(conn net.Conn) {
 		if result == nil {
 			conn.Write(connId)
 		} else {
-			bytes := append(connId, []byte(result.(string))...)
+			var r []byte
+
+			switch v := result.(type) {
+			case int:
+				r = []byte(strconv.Itoa(v))
+			case string:
+				r = []byte(v)
+			default:
+			}
+
+			bytes := append(connId, r...)
+
 			conn.Write(bytes)
 		}
 	}

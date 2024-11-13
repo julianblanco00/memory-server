@@ -53,6 +53,10 @@ func parseCommand(command string) (interface{}, error) {
 	}
 
 	switch strings.TrimSpace(cmd[0]) {
+	case "EXISTS":
+		return sData.exists(cmd[1:])
+	case "APPEND":
+		return sData.append(cmd[1], cmd[2])
 	case "GET":
 		return sData.get(cmd[1])
 	case "SET":
