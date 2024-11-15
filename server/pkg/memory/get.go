@@ -6,7 +6,9 @@ import (
 )
 
 func Get(k string, d *StringData) (interface{}, error) {
+	d.mutex.RLock()
 	v, ok := d.values[k]
+	d.mutex.RUnlock()
 	if !ok {
 		return nil, nil
 	}

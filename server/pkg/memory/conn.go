@@ -31,6 +31,14 @@ func handleReadFromConn(conn net.Conn) {
 			}
 		}
 
+		if n < 16 {
+			fmt.Println("received an invalid buffer", n, err)
+			conn.Close()
+			break
+		} else {
+			fmt.Printf("new tcp connection %s \n", conn.RemoteAddr())
+		}
+
 		connId := buf[:CONN_ID_LENGTH]
 		cmd := buf[CONN_ID_LENGTH:n]
 
@@ -67,8 +75,6 @@ func HandleConnection(listener net.Listener) {
 			fmt.Printf("error accepting connection %v", err)
 			continue
 		}
-
-		fmt.Printf("new tcp connection %s \n", conn.RemoteAddr())
 
 		go handleReadFromConn(conn)
 	}

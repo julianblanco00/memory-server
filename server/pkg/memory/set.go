@@ -136,7 +136,10 @@ func Set(data *StringData, k, v string, opts []string) (string, error) {
 		data:  v,
 		expIn: expIn,
 	}
+
+	data.mutex.Lock()
 	data.values[k] = value
+	data.mutex.Unlock()
 
 	if oldValue != nil {
 		return oldValue.(string), nil

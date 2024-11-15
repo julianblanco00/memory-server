@@ -1,11 +1,14 @@
 package memory
 
+import "sync"
+
 type StringValue struct {
 	expIn *int64
 	data  string
 }
 type StringData struct {
 	values map[string]StringValue
+	mutex  sync.RWMutex
 	amount int32
 }
 
@@ -37,5 +40,6 @@ func NewStringData() *StringData {
 	return &StringData{
 		amount: 0,
 		values: make(map[string]StringValue),
+		mutex:  sync.RWMutex{},
 	}
 }
